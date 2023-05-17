@@ -148,6 +148,7 @@ export type BankIdResponse =
 
 interface BankIdClientSettings {
   production: boolean;
+  testUrl?: string; // When added, and production is false. Connect to this url dangerously WO TLS!
   refreshInterval?: number;
   pfx?: string | Buffer;
   passphrase?: string;
@@ -232,7 +233,7 @@ export class BankIdClient {
 
     this.baseUrl = this.options.production
       ? "https://appapi2.bankid.com/rp/v5.1/"
-      : "https://appapi2.test.bankid.com/rp/v5.1/";
+      : this.options.testUrl ? this.options.testUrl : "https://appapi2.test.bankid.com/rp/v5.1/";
   }
 
   authenticate(parameters: AuthRequest): Promise<AuthResponse> {
@@ -356,6 +357,17 @@ export class BankIdClient {
       : fs.readFileSync(this.options.pfx);
     const passphrase = this.options.passphrase;
 
+    /**
+     * This dangerous thing runs without TLS if we are NOT in production AND have a testUrl specified
+     * */
+    if (this.options.testUrl && !this.options.production) {
+      return axios.create({
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    }
     return axios.create({
       httpsAgent: new https.Agent({ pfx, passphrase, ca }),
       headers: {
