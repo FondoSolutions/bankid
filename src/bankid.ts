@@ -46,7 +46,7 @@ export interface SignRequest extends AuthRequestV5 {
   userVisibleData: string;
 }
 
-export interface SignResponse extends AuthResponse {}
+export interface SignResponse extends AuthResponse { }
 
 //
 // Type definitions for /collect
@@ -99,9 +99,9 @@ export type PendingHintCode =
 // Type definitions for /cancel
 //
 
-export interface CancelRequest extends CollectRequest {}
+export interface CancelRequest extends CollectRequest { }
 
-export interface CancelResponse {}
+export interface CancelResponse { }
 
 //
 // Type definitions for error responses
@@ -155,6 +155,7 @@ export type BankIdResponse =
 //
 
 interface BankIdClientSettings {
+  demo: boolean
   production: boolean;
   refreshInterval?: number;
   pfx?: string | Buffer;
@@ -375,11 +376,18 @@ export class BankIdClient {
         });
     });
   }
+  getHostName() {
+    if (this.options.demo) {
+      return `https://appapi2.demo.bankid.com/rp/${this.version}/`;
+    }
+    if (this.options.production) {
+      return `https://appapi2.bankid.com/rp/${this.version}/`
+    }
+    return `https://appapi2.test.bankid.com/rp/${this.version}/`;
+  }
 
   createAxiosInstance(): AxiosInstance {
-    const baseURL = this.options.production
-      ? `https://appapi2.bankid.com/rp/${this.version}/`
-      : `https://appapi2.test.bankid.com/rp/${this.version}/`;
+    const baseURL = this.getHostName()
 
     const ca = Buffer.isBuffer(this.options.ca)
       ? this.options.ca
