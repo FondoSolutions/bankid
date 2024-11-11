@@ -1,4 +1,5 @@
 # bankid
+This is a comment
 
 A npm module to simplify integration with the Swedish [Bank ID](https://www.bankid.com/en/) service for user authentication and signing processes.
 
